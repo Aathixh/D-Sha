@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-
+import { Link } from 'react-router-dom';
+import {toast} from 'react-toastify';
 const Register = ({ setAuth }) => {
   const [inputs, setInputs] = useState({
     username: '',
@@ -26,6 +27,7 @@ const Register = ({ setAuth }) => {
       console.log(parseRes);
       localStorage.setItem("token", parseRes.token);
       setAuth(true);
+      toast.success("Registered Successfully");
     } catch (err) {
       console.error(err.message);
     }
@@ -61,6 +63,7 @@ const Register = ({ setAuth }) => {
       />
       <button type="submit" className='btn btn-block btn-success'>Register</button>
     </form>
+    <Link to="/login">Login</Link>
     </>
   );
 };
