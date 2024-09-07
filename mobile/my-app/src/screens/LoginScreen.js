@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("");
@@ -8,7 +9,7 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post("http://your-backend-url/login", {
+      const response = await axios.post("http://172.20.10.7:5000/auth/login", {
         username,
         password,
       });
