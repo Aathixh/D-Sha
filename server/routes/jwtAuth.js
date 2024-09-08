@@ -5,29 +5,33 @@ const jwtGenerator = require('../utils/jwtGenerator');
 const validInfo = require('../middleware/validinfo');
 const authorize = require('../middleware/authorization');
 //registering
-router.post('/register',async(req,res)=>{
+router.post('/register', validInfo, async (req, res) => {
     try {
-        //1. destructure the req.body (name,email,role)
-        const {username,password} = req.body;
-        //2. check if user exists (if user exists then throw error)
-        const user = await pool.query("SELECT * FROM users WHERE username = $1",[username]);
-        if(user.rows.length!==0){
-            return res.status(401).send("User already exists");
-        }
-        //3. Bcrypt the user password
-        const saltRound = 10;
-        const salt = await bcrypt.genSalt(saltRound);
-        const bcryptPassword = await bcrypt.hash(password,salt);
-        //4. Enter the new user inside our database
-        const newUser = await pool.query("INSERT INTO users (username,password,role) VALUES ($1,$2,'admin') RETURNING *",[username,bcryptPassword]);
-        //5. Generating our jwt token
-        const token = jwtGenerator(newUser.rows[0].username);
-        res.json({token});
-    } catch(err){
-        console.error(err.message);
-        res.status(500).send("Server Error");
+      const { username, password, role } = req.body;
+  
+      const user = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+  
+      if (user.rows.length > 0) {
+        return res.status(401).json('User already exists');
+      }
+  
+      const salt = await bcrypt.genSalt(10);
+      const bcryptPassword = await bcrypt.hash(password, salt);
+  
+      const newUser = await pool.query(
+        'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING *',
+        [username, bcryptPassword, role]
+      );
+  
+      const token = jwtGenerator(newUser.rows[0].id);
+  
+      res.json({ token });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server error');
     }
-});
+  });
+  
 //login route
 router.post('/login',async(req,res)=>{
     try {
@@ -45,7 +49,7 @@ router.post('/login',async(req,res)=>{
         }
         //4. give them the jwt token
         const token = jwtGenerator(user.rows[0].username);
-        res.json({token});
+        return res.json({token});
     } catch(err){
         console.error(err.message);
         res.status(500).send("Server Error");
